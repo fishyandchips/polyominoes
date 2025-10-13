@@ -4,8 +4,8 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "Build your Component Library",
-  description: "Build your own component library, powered by shadcn/ui",
+  title: "Game",
+  description: "Game",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
