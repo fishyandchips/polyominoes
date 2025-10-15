@@ -6,6 +6,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 
 const NUM_ROWS = 11;
@@ -65,7 +72,7 @@ export default function Home() {
       .map((biome) => {
       return { 
         colour: TERRAIN_COLOURS[biome as keyof typeof TERRAIN_COLOURS], 
-        size: Math.floor(Math.random() * 6) + 20, 
+        size: Math.floor(Math.random() * 16) + 30, 
         positions: [] as Coords[]
       };
     });
@@ -78,7 +85,7 @@ export default function Home() {
 
         if (!usedSeedCoordinates.has(key)) {
           usedSeedCoordinates.add(key);
-          newBoard[x]![y] = biome.colour;
+          newBoard[y]![x] = biome.colour;
           biome.positions.push({ x, y });
           biome.size--;
         }
@@ -91,18 +98,31 @@ export default function Home() {
         if (!biome) continue;
         if (biome.size <= 0) continue;
 
+        biome.size--;
         const initPos = biome.positions[Math.floor(Math.random() * biome.positions.length)];
         if (!initPos) continue;
         let validNeighbours = getValidNeighbours(initPos.x, initPos.y);
         validNeighbours = validNeighbours.filter((neighbour) => {
-          return newBoard[neighbour.x]![neighbour.y] === TERRAIN_COLOURS.Ocean; 
-        })
+          return newBoard[neighbour.y]![neighbour.x] === TERRAIN_COLOURS.Ocean; 
+        });
         const newCell = validNeighbours[Math.floor(Math.random() * validNeighbours.length)];
         if (!newCell) continue;
 
-        newBoard[newCell.x]![newCell.y] = biome.colour;
+        newBoard[newCell.y]![newCell.x] = biome.colour;
         biome.positions.push({ x: newCell.x, y: newCell.y });
-        biome.size--;
+      }
+    }
+
+    for (let y = 0; y < NUM_ROWS; y++) {
+      for (let x = 0; x < NUM_ROWS; x++) {
+        if (newBoard[y]![x] === TERRAIN_COLOURS.Ocean && 
+          getValidNeighbours(x, y)
+            .some(
+              ({ x, y }) => 
+            newBoard[y]![x] !== TERRAIN_COLOURS.Ocean && newBoard[y]![x] !== TERRAIN_COLOURS.Water
+        )) {
+          newBoard[y]![x] = TERRAIN_COLOURS.Water;
+        }
       }
     }
 
@@ -110,14 +130,18 @@ export default function Home() {
   }
 
   const clearBoard = () => {
-    const newBoard = Array(NUM_ROWS).fill(Array(NUM_ROWS).fill(DEFAULT_COLOUR));
+    const newBoard = Array.from({ length: NUM_ROWS }, () => 
+        Array(NUM_ROWS).fill(DEFAULT_COLOUR)
+    );
     setBoardState(newBoard);
   }
 
   return (
     <main className="w-full h-full flex justify-center items-center">
-      <Button className="cursor-pointer" onClick={generateTerrain}>Generate Terrain</Button>
-      <Button className="cursor-pointer" onClick={clearBoard}>Clear Board</Button>
+      <div className="absolute bottom-10 right-10 flex flex-col gap-3">
+        <Button size="lg" className="cursor-pointer" onClick={generateTerrain}>Generate Terrain</Button>
+        <Button size="lg"  className="cursor-pointer" onClick={clearBoard}>Clear Board</Button>
+      </div>
 
       <div 
         className="flex flex-wrap aspect-square"
@@ -129,6 +153,10 @@ export default function Home() {
         {[...Array(NUM_ROWS * NUM_ROWS)].map((_, i) => {
           const x = i % NUM_ROWS;
           const y = Math.floor(i / NUM_ROWS); 
+          const currColor = boardState[y]![x];
+          const currTerrain = Object.keys(TERRAIN_COLOURS).find(
+            key => TERRAIN_COLOURS[key as keyof typeof TERRAIN_COLOURS] === currColor
+          ) || "empty";
 
           return (
             <Popover key={i}>
@@ -138,13 +166,30 @@ export default function Home() {
                   style={{ 
                     height: isLandscape ? `calc(100vh/${NUM_ROWS})` : "auto",
                     width: isLandscape ? "auto" : `calc(100vw/${NUM_ROWS})`,
-                    backgroundColor: boardState[y]![x]
+                    backgroundColor: currColor
                   }} 
                 />
               </PopoverTrigger>
-              <PopoverContent className="flex flex-col w-32 gap-4">
-                <Button className="cursor-pointer" onClick={() => updateCell(x, y, "#FFFF00")}>Desert</Button>
-                <Button className="cursor-pointer" onClick={() => updateCell(x, y, "#0000FF")}>Water</Button>
+              <PopoverContent>
+                <Select 
+                  value={currTerrain} 
+                  onValueChange={(terrain) => {
+                    const newColor = TERRAIN_COLOURS[terrain as keyof typeof TERRAIN_COLOURS] || DEFAULT_COLOUR;
+                    updateCell(x, y, newColor);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Terrain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="empty" className="opacity-50">Empty</SelectItem>
+                    {Object.keys(TERRAIN_COLOURS).map((terrain, i) => {
+                      return (
+                        <SelectItem key={i} value={terrain}>{terrain}</SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </PopoverContent>
             </Popover>
           );
