@@ -19,7 +19,8 @@ import DiamondIcon from '@mui/icons-material/Diamond';
 import PersonIcon from '@mui/icons-material/Person';
 
 const NUM_ROWS = 11;
-const DEFAULT_COLOUR = "#FFFFFF"
+const DEFAULT_COLOUR = "#FFFFFF";
+const DEFAULT_TURN_TIME = 60; // 60 seconds -> 1 min
 const TERRAIN_COLOURS = {
   Desert: "#FFEE8F",
   Grass: "#8FFFA2",
@@ -61,9 +62,44 @@ const FEATURES = {
 }
 const TROOPS = {
   Warrior: {
-    color: "#FF0000"
+    appearance: (isLandscape) => (
+      <PersonIcon
+        style={{
+          height: isLandscape ? `calc(100vh/${NUM_ROWS}/2)` : "auto",
+          width: isLandscape ? "auto" : `calc(100vw/${NUM_ROWS}/2)`
+        }}
+      />
+    ),
+    health: 10,
+    attack: 2,
+    defense: 2,
+    movement: 1,
+    range: 1,
+    moves: 1
+  },
+  Rider: {
+    appearance: (isLandscape) => (
+      <PersonIcon
+        className="text-[#FF0000]"
+        style={{
+          height: isLandscape ? `calc(100vh/${NUM_ROWS}/2)` : "auto",
+          width: isLandscape ? "auto" : `calc(100vw/${NUM_ROWS}/2)`
+        }}
+      />
+    ),
+    health: 10,
+    attack: 2,
+    defense: 1,
+    movement: 2,
+    range: 1,
+    moves: 2
   },
 }
+const PLAYERS = [
+  { username: "Alice" },
+  { username: "Bob" },
+  { username: "Carl" }
+]
 
 export default function Home() {
   const [boardState, setBoardState] = useState(Array.from({ length: NUM_ROWS }, () => {
@@ -71,6 +107,9 @@ export default function Home() {
   }));
   const [isLandscape, setIsLandscape] = useState(false);
   const [troops, setTroops] = useState([]);
+  const [currentPlayer, setCurrentPlayer] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [turnTimer, setTurnTimer] = useState(DEFAULT_TURN_TIME);
   
   useEffect(() => {
     const handleResize = () => {
@@ -81,18 +120,40 @@ export default function Home() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const updateCell = (x, y, colour) => {
-   setBoardState((prev) => {
-      const newBoard = prev.map((row, rowIndex) => 
-          rowIndex === y ? row.map(cell => ({ ...cell })) : row.slice()
-      );
-      newBoard[y][x] = {
-          ...newBoard[y][x],
-          color: newBoard[y][x].color === colour ? DEFAULT_COLOUR : colour
-      };
-      return newBoard;
-    });
-  }
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const interval = setInterval(() => {
+      setTurnTimer(prev => Math.max(prev - 1, 0));
+    }, 1000);
+
+    if (turnTimer === 0) {
+      setCurrentPlayer(prev => (prev + 1) % PLAYERS.length);
+      setTurnTimer(DEFAULT_TURN_TIME);
+      setTroops(prev => prev.map(troop => ({ ...troop, active: false, moves: TROOPS[troop.type].moves })));
+    }
+
+    return () => clearInterval(interval);
+  }, [gameStarted, turnTimer]);
+
+  // const updateCell = (x, y, colour) => {
+  //  setBoardState((prev) => {
+  //     const newBoard = prev.map((row, rowIndex) => 
+  //         rowIndex === y ? row.map(cell => ({ ...cell })) : row.slice()
+  //     );
+  //     newBoard[y][x] = {
+  //         ...newBoard[y][x],
+  //         color: newBoard[y][x].color === colour ? DEFAULT_COLOUR : colour
+  //     };
+  //     return newBoard;
+  //   });
+  // }
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
   const getValidNeighbours = (x, y) => {
     const validNeighbours = [];
@@ -218,7 +279,7 @@ export default function Home() {
     e.stopPropagation();
     setTroops(prev =>
       prev.map(troop => {
-        if (troop.x === x && troop.y === y) {
+        if (troop.x === x && troop.y === y && currentPlayer === troop.player && troop.moves > 0) {
           return { ...troop, active: !troop.active };
         }
         return { ...troop, active: false };
@@ -231,22 +292,93 @@ export default function Home() {
     setTroops(prev =>
       prev.map(troop => {
         if (troop.x === activeTroop.x && troop.y === activeTroop.y) {
-          return { ...troop, x: newX, y: newY, active: false };
+          return { ...troop, x: newX, y: newY, active: false, moves: troop.moves - 1 };
         }
         return troop;
       })
     );
   }
 
-  const validTroopPositions = (activeTroop) => {
-    return getValidNeighbours(activeTroop.x, activeTroop.y);
+  // REFACTOR WITH BFS LATER
+  const validTroopPositions = (troop) => {
+    const validPositions = [];
+
+    for (let i = 0; i < TROOPS[troop.type].movement; i++) {
+      if (validPositions.length === 0) {
+        for (let x = troop.x - 1; x <= troop.x + 1; x++) {
+          for (let y = troop.y - 1; y <= troop.y + 1; y++) {
+            if (
+              (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
+              (x === troop.x && y === troop.y) || // Current position
+              (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
+              (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
+              (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
+              (boardState[y][x].features.length > 0) // Cell has a feature
+            ) continue;
+            validPositions.push({ x, y });
+          }
+        }
+      } else {
+        validPositions.forEach((pos) => {
+          for (let x = pos.x - 1; x <= pos.x + 1; x++) {
+            for (let y = pos.y - 1; y <= pos.y + 1; y++) {
+              if (
+                (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
+                (x === pos.x && y === pos.y) || // Current position
+                (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
+                (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
+                (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
+                (boardState[y][x].features.length > 0) // Cell has a feature
+              ) continue;
+              validPositions.push({ x, y });
+            }
+          }
+        })
+      }
+    }
+  
+    return validPositions;
+  }
+
+  const startGame = () => {
+    setGameStarted(true);
+  }
+
+  const endGame = () => {
+    setGameStarted(false);
+    setTurnTimer(DEFAULT_TURN_TIME);
+    setCurrentPlayer(0);
+    setTroops([]);
+  }
+
+  const endTurn = () => {
+    setTurnTimer(DEFAULT_TURN_TIME);
+    setCurrentPlayer(prev => (prev + 1) % PLAYERS.length);
+    setTroops(prev => prev.map(troop => ({ ...troop, active: false, moves: TROOPS[troop.type].moves })));
   }
 
   return (
     <main className="w-full h-full flex justify-center items-center">
-      <div className="absolute z-20 bottom-10 right-10 flex flex-col gap-3">
-        <Button size="lg" className="cursor-pointer" onClick={generateTerrain}>Generate Terrain</Button>
-        <Button size="lg"  className="cursor-pointer" onClick={clearBoard}>Clear Board</Button>
+      {gameStarted && (
+        <div className="absolute z-20 top-5 left-5 flex flex-col gap-3">
+          <h1 className="font-bold text-xl">{PLAYERS[currentPlayer].username}'s Turn</h1>
+          <h2 className="text-lg">{formatTime(turnTimer)}</h2>
+        </div>
+      )}
+
+      <div className="absolute z-20 bottom-5 right-5 flex flex-col gap-3">
+        {gameStarted ? (
+          <>
+            <Button size="lg"  className="cursor-pointer" onClick={endTurn}>End Turn</Button>
+            <Button size="lg"  className="cursor-pointer" onClick={endGame}>End Game</Button>
+          </>
+        ) : (
+          <>
+            <Button size="lg" className="cursor-pointer" onClick={generateTerrain}>Generate Terrain</Button>
+            <Button size="lg"  className="cursor-pointer" onClick={clearBoard}>Clear Board</Button>
+            <Button size="lg"  className="cursor-pointer" onClick={startGame}>Start Game</Button>
+          </>
+        )}
       </div>
 
       <div 
@@ -289,12 +421,7 @@ export default function Home() {
                           className="absolute w-[75%] h-[75%] flex justify-center items-center rounded-full bg-[#000000]/0 hover:bg-[#000000]/20 transition-all duration-300 ease-in-out" 
                           onClick={(e) => toggleTroopActivity(e, troop.x, troop.y)}
                         >
-                          <PersonIcon 
-                            style={{ 
-                              height: isLandscape ? `calc((100vh/${NUM_ROWS}/2))` : "auto",
-                              width: isLandscape ? "auto" : `calc((100vw/${NUM_ROWS}/2))` 
-                            }} 
-                          />
+                          {TROOPS[troop.type].appearance(isLandscape)}
                         </div>
                       );
                     }
@@ -315,32 +442,36 @@ export default function Home() {
                   )}
                 </div>
               </PopoverTrigger>
-              <PopoverContent>
-                <Select 
-                  value={currTroop ? currTroop.type : ""} 
-                  onValueChange={(value) => {
-                    let newTroops = [...troops];
-                    if (value === "remove-troop") {
-                      newTroops = newTroops.filter((troop) => !(troop.x === x && troop.y === y));
-                    } else {
-                      newTroops.push({ type: value, x, y, active: false });
-                    }
-                    setTroops(newTroops);
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Add troop" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currTroop && <SelectItem value={"remove-troop"} className="opacity-50">Remove Troop</SelectItem>}
-                    {Object.keys(TROOPS).map((troop, i) => {
-                      return (
-                        <SelectItem key={i} value={troop}>{troop}</SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </PopoverContent>
+              {gameStarted && (!currTroop || currTroop.player === currentPlayer) && (
+                <PopoverContent>
+                  <Select
+                    value={currTroop ? currTroop.type : ""}
+                    onValueChange={(value) => {
+                      let newTroops = troops.filter((troop) => !(troop.x === x && troop.y === y));
+                      if (value !== "remove-troop") {
+                        newTroops.push({ type: value, x, y, active: false, player: currentPlayer, moves: TROOPS[value].moves });
+                      }
+                      setTroops(newTroops);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Add troop" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currTroop && (
+                        <SelectItem value="remove-troop" className="opacity-50">
+                          Remove Troop
+                        </SelectItem>
+                      )}
+                      {Object.keys(TROOPS).map((troop) => (
+                        <SelectItem key={troop} value={troop}>
+                          {troop}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </PopoverContent>
+              )}
             </Popover>
           );
         })}
