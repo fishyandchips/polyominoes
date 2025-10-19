@@ -13,6 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/components/ui/hover-card"
 import { Button } from "~/components/ui/button";
 import LandscapeIcon from '@mui/icons-material/Landscape';
 import DiamondIcon from '@mui/icons-material/Diamond';
@@ -71,11 +76,12 @@ const TROOPS = {
       />
     ),
     health: 10,
-    attack: 2,
+    attack: 5,
     defense: 2,
     movement: 1,
     range: 1,
-    moves: 1
+    numMoves: 1,
+    numAttacks: 1
   },
   Rider: {
     appearance: (isLandscape) => (
@@ -88,11 +94,12 @@ const TROOPS = {
       />
     ),
     health: 10,
-    attack: 2,
+    attack: 5,
     defense: 1,
     movement: 2,
     range: 1,
-    moves: 2
+    numMoves: 2,
+    numAttacks: 1
   },
 }
 const PLAYERS = [
@@ -130,7 +137,7 @@ export default function Home() {
     if (turnTimer === 0) {
       setCurrentPlayer(prev => (prev + 1) % PLAYERS.length);
       setTurnTimer(DEFAULT_TURN_TIME);
-      setTroops(prev => prev.map(troop => ({ ...troop, active: false, moves: TROOPS[troop.type].moves })));
+      setTroops(prev => prev.map(troop => ({ ...troop, active: false, numMoves: TROOPS[troop.type].numMoves, numAttacks: TROOPS[troop.type].numAttacks })));
     }
 
     return () => clearInterval(interval);
@@ -279,7 +286,7 @@ export default function Home() {
     e.stopPropagation();
     setTroops(prev =>
       prev.map(troop => {
-        if (troop.x === x && troop.y === y && currentPlayer === troop.player && troop.moves > 0) {
+        if (troop.x === x && troop.y === y && currentPlayer === troop.player && (troop.numMoves > 0 || troop.numAttacks > 0)) {
           return { ...troop, active: !troop.active };
         }
         return { ...troop, active: false };
@@ -292,11 +299,56 @@ export default function Home() {
     setTroops(prev =>
       prev.map(troop => {
         if (troop.x === activeTroop.x && troop.y === activeTroop.y) {
-          return { ...troop, x: newX, y: newY, active: false, moves: troop.moves - 1 };
+          return { ...troop, x: newX, y: newY, active: false, numMoves: troop.numMoves - 1 };
         }
         return troop;
       })
     );
+  }
+
+  const attackTroop = (e, activeTroop, newX, newY) => {
+    e.stopPropagation();
+    const attackedTroop = troops.find((troop) => troop.x === newX && troop.y === newY);
+
+    setTroops(prev => {
+      if ((TROOPS[activeTroop.type].attack - TROOPS[attackedTroop.type].defense) >= attackedTroop.health) { // Troop is killed off
+        return prev
+          .filter(troop => !(troop.x === newX && troop.y === newY))
+          .map(troop => {
+            if (troop.x === activeTroop.x && troop.y === activeTroop.y) {
+              return { ...troop, x: newX, y: newY, active: false, numMoves: troop.numMoves - 1, numAttacks: troop.numAttacks - 1 };
+            }
+            return troop;
+        })
+      } else {
+        return prev.map(troop => {
+          if (troop.x === activeTroop.x && troop.y === activeTroop.y) {
+            return { ...troop, active: false, health: troop.health - (TROOPS[attackedTroop.type].attack - TROOPS[troop.type].defense), numMoves: troop.numMoves - 1, numAttacks: troop.numAttacks - 1 };
+          } else if (troop.x === attackedTroop.x && troop.y === attackedTroop.y) {
+            return { ...troop, active: false, health: troop.health - (TROOPS[activeTroop.type].attack - TROOPS[troop.type].defense) };
+          }
+          return troop;
+        });
+      }
+    });
+  }
+
+  const validAttackPositions = (troop) => {
+    const validPositions = [];
+
+    for (let x = troop.x - TROOPS[troop.type].range; x <= troop.x + TROOPS[troop.type].range; x++) {
+      for (let y = troop.y - TROOPS[troop.type].range; y <= troop.y + TROOPS[troop.type].range; y++) {
+        if (
+          (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
+          (x === troop.x && y === troop.y) || // Current position
+          (!troops.some((t) => t.x === x && t.y === y)) || // Cell unoccupied by a troop
+          (troops.some((t) => t.x === x && t.y === y && t.player === currentPlayer)) // The troop is one of the player's troops
+        ) continue;
+        validPositions.push({ x, y });
+      }
+    }
+  
+    return validPositions;
   }
 
   // REFACTOR WITH BFS LATER
@@ -354,7 +406,7 @@ export default function Home() {
   const endTurn = () => {
     setTurnTimer(DEFAULT_TURN_TIME);
     setCurrentPlayer(prev => (prev + 1) % PLAYERS.length);
-    setTroops(prev => prev.map(troop => ({ ...troop, active: false, moves: TROOPS[troop.type].moves })));
+    setTroops(prev => prev.map(troop => ({ ...troop, active: false, numMoves: TROOPS[troop.type].numMoves, numAttacks: TROOPS[troop.type].numAttacks })));
   }
 
   return (
@@ -416,23 +468,46 @@ export default function Home() {
                   {troops.map((troop) => {
                     if (troop.x === x && troop.y === y) {
                       return (
-                        <div 
-                          key={`${troop.x}, ${troop.y}`} 
-                          className="absolute w-[75%] h-[75%] flex justify-center items-center rounded-full bg-[#000000]/0 hover:bg-[#000000]/20 transition-all duration-300 ease-in-out" 
-                          onClick={(e) => toggleTroopActivity(e, troop.x, troop.y)}
-                        >
-                          {TROOPS[troop.type].appearance(isLandscape)}
-                        </div>
+                        <HoverCard key={`${troop.x}, ${troop.y}`} >
+                          <HoverCardTrigger className="relative w-full h-full flex justify-center items-center" >
+                            <div 
+                              className="absolute w-[75%] h-[75%] flex justify-center items-center rounded-full bg-[#000000]/0 hover:bg-[#000000]/20 transition-all duration-300 ease-in-out" 
+                              onClick={(e) => toggleTroopActivity(e, troop.x, troop.y)}
+                            >
+                              {TROOPS[troop.type].appearance(isLandscape)}
+                            </div>
+                          </HoverCardTrigger>
+                          <HoverCardContent>
+                            <h1 className="font-bold">{troop.type}</h1>
+                            {Object.keys(troop).map((field) => (
+                              <p>{field}: {String(troop[field])}</p>
+                            ))}
+                          </HoverCardContent>
+                        </HoverCard>
                       );
                     }
                   })}
-                  {activeTroop && validTroopPositions(activeTroop).some((pos) => pos.x === x && pos.y === y) && (
+                  {activeTroop && activeTroop.numMoves > 0 && validTroopPositions(activeTroop).some((pos) => pos.x === x && pos.y === y) && (
                     <div 
                       className="absolute w-[75%] h-[75%] flex justify-center items-center rounded-full bg-[#000000]/0 hover:bg-[#000000]/20 transition-all duration-300 ease-in-out" 
                       onClick={(e) => moveTroop(e, activeTroop, x, y)}
                     >
                       <div 
                         className="aspect-square opacity-50 bg-[#000000] rounded-full" 
+                        style={{ 
+                          height: isLandscape ? `calc((100vh/${NUM_ROWS})/6)` : "auto",
+                          width: isLandscape ? "auto" : `calc((100vw/${NUM_ROWS})/6)`
+                        }} 
+                      />
+                    </div>  
+                  )}
+                  {activeTroop && activeTroop.numAttacks > 0 && validAttackPositions(activeTroop).some((pos) => pos.x === x && pos.y === y) && (
+                    <div 
+                      className="absolute w-[75%] h-[75%] z-10 flex justify-center items-center rounded-full bg-[#000000]/0 hover:bg-[#000000]/20 transition-all duration-300 ease-in-out" 
+                      onClick={(e) => attackTroop(e, activeTroop, x, y)}
+                    >
+                      <div 
+                        className="aspect-square opacity-50 bg-[#FF0000] rounded-full" 
                         style={{ 
                           height: isLandscape ? `calc((100vh/${NUM_ROWS})/6)` : "auto",
                           width: isLandscape ? "auto" : `calc((100vw/${NUM_ROWS})/6)`
@@ -449,7 +524,7 @@ export default function Home() {
                     onValueChange={(value) => {
                       let newTroops = troops.filter((troop) => !(troop.x === x && troop.y === y));
                       if (value !== "remove-troop") {
-                        newTroops.push({ type: value, x, y, active: false, player: currentPlayer, moves: TROOPS[value].moves });
+                        newTroops.push({ type: value, x, y, active: false, player: currentPlayer, health: TROOPS[value].health, numMoves: TROOPS[value].numMoves, numAttacks: TROOPS[value].numAttacks });
                       }
                       setTroops(newTroops);
                     }}
