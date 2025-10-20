@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { GameProvider } from "~/contexts/GameContext";
 
 export const metadata: Metadata = {
   title: "Game",
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body className="w-screen h-screen">
-        {children}
+        <GameProvider>
+          {children}
+        </GameProvider>
       </body>
     </html>
   );
