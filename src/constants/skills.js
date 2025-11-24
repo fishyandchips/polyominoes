@@ -95,132 +95,328 @@ export const SKILLS = [
     ],
   },
   { 
-    name: "Surveying", 
+    name: "Vision", 
     tier: 3,
     cost: 8, 
     prereqs: ["Roads"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Shortcuts",
+        description: "Faster paths for navigating through terrain.",
+        appearance: <></>
+      },
+      {
+        name: "Visibility Bonus",
+        description: "Troop vision radius increased by 1.",
+        appearance: <></>
+      },
+      {
+        name: "Generator Locations",
+        description: "Diamond and Emerald generator locations revealed.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Cartographer", 
+    name: "Worldview", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Surveying"],
+    prereqs: ["Vision"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Scout",
+        description: "Unlocks the Scout troop.",
+        appearance: <></>
+      },
+      {
+        name: "Global Vision",
+        description: "All tiles now revealed.",
+        appearance: <></>
+      },
+      {
+        name: "Road Speed Bonus",
+        description: "Troops now travel at 2x speed on Roads and Bridges.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Toolmaking", 
+    name: "Mining", 
     tier: 1,
     cost: 8, 
     prereqs: [],
     appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Prospecting", 
-    tier: 2,
-    cost: 8, 
-    prereqs: ["Toolmaking"],
-    appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Mines",
+        description: "Produces 2 population.",
+        appearance: <></>
+      },
+    ],
   },
   { 
     name: "Metallurgy", 
-    tier: 3,
+    tier: 2,
     cost: 8, 
-    prereqs: ["Prospecting"],
+    prereqs: ["Mining"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Forge",
+        description: "Produces 2 population for every adjacent Mine.",
+        appearance: <></>
+      },
+      {
+        name: "Weapon Attacks Bonus",
+        description: "Weapon users gain +10% attack damage.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Master Miner", 
-    tier: 4,
+    name: "Siege", 
+    tier: 3,
     cost: 8, 
     prereqs: ["Metallurgy"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Bomber",
+        description: "Unlocks the Bomber troop.",
+        appearance: <></>
+      },
+      {
+        name: "Faster Mines",
+        description: "Mines now produce +3 stars every iteration and have a chance of uncovering rare ores.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Melee Training", 
-    tier: 2,
-    cost: 8, 
-    prereqs: ["Toolmaking"],
-    appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Tactics", 
-    tier: 3,
-    cost: 8, 
-    prereqs: ["Melee Training"],
-    appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Elite Warriors", 
+    name: "Fortress", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Tactics"],
+    prereqs: ["Siege"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Golem",
+        description: "Unlocks the Golem troop.",
+        appearance: <></>
+      },
+      {
+        name: "Walls",
+        description: "Can be placed on territory borders.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Domestication", 
+    name: "Archery", 
+    tier: 2,
+    cost: 8, 
+    prereqs: ["Mining"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Archer",
+        description: "Unlocks the Archer troop.",
+        appearance: <></>
+      },
+      {
+        name: "Ranged Attacks Bonus",
+        description: "Ranged units gain +10% attack damage.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Martial", 
+    tier: 3,
+    cost: 8, 
+    prereqs: ["Archery"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Swordsman",
+        description: "Unlocks the Swordsman troop.",
+        appearance: <></>
+      },
+      {
+        name: "Melee Attacks Bonus",
+        description: "Melee units gain +10% attack damage.",
+        appearance: <></>
+      },
+      {
+        name: "Defense Bonus",
+        description: "All troops gain +10% defense.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Vanguard", 
+    tier: 4,
+    cost: 8, 
+    prereqs: ["Martial"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Sniper",
+        description: "Unlocks the Sniper troop.",
+        appearance: <></>
+      },
+      {
+        name: "Dragonslayer",
+        description: "Unlocks the Dragonslayer troop.",
+        appearance: <></>
+      },
+      {
+        name: "Critical Attack Rate",
+        description: "All troops gain +20% critical attack rate.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Organisation", 
     tier: 1,
     cost: 8, 
     prereqs: [],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Fruits",
+        description: "Produces 1 population.",
+        appearance: <></>
+      },
+      {
+        name: "Hunting",
+        description: "Produces 1 population.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Farming", 
+    name: "Cultivation", 
     tier: 2,
+    cost: 8, 
+    prereqs: ["Organisation"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Farming",
+        description: "Produces 2 population.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Harvest", 
+    tier: 3,
+    cost: 8, 
+    prereqs: ["Cultivation"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Windmill",
+        description: "Produces 1 population for every adjacent Farm.",
+        appearance: <></>
+      },
+      {
+        name: "Burn Forest",
+        description: "Turns a Forest into a Field.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Prosperity", 
+    tier: 4,
+    cost: 8, 
+    prereqs: ["Harvest"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Trade",
+        description: "Number of stars generated increases by 1 for each Windmill and Forge and their levels.",
+        appearance: <></>
+      },
+      {
+        name: "Farm Bonus",
+        description: "All farms now produce 3 population.",
+        appearance: <></>
+      },
+      {
+        name: "Windmill Bonus",
+        description: "All windmills now produce 2 population for every adjacent Farm.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Domestication", 
+    tier: 2,
+    cost: 8, 
+    prereqs: ["Organisation"],
+    appearance: <></>,
+    unlocks: [
+      {
+        name: "Rider",
+        description: "Unlocks the Rider troop.",
+        appearance: <></>
+      },
+      {
+        name: "Horse",
+        description: "Riders can now ride Horses.",
+        appearance: <></>
+      },
+      {
+        name: "Fruits Cost Reduction",
+        description: "Reduce cost of collecting fruits by 10%.",
+        appearance: <></>
+      },
+    ],
+  },
+  { 
+    name: "Bonding", 
+    tier: 3,
     cost: 8, 
     prereqs: ["Domestication"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Tiger",
+        description: "Riders can now ride Tigers.",
+        appearance: <></>
+      },
+      {
+        name: "Hunting Cost Reduction",
+        description: "Reduce cost of hunting by 10%.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Industry", 
-    tier: 3,
-    cost: 8, 
-    prereqs: ["Farming"],
-    appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Agro-mastery", 
+    name: "Beast", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Industry"],
+    prereqs: ["Bonding"],
     appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Pets", 
-    tier: 2,
-    cost: 8, 
-    prereqs: ["Domestication"],
-    appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Animal Training", 
-    tier: 3,
-    cost: 8, 
-    prereqs: ["Pets"],
-    appearance: <></>,
-    unlocks: [],
-  },
-  { 
-    name: "Beast Mastery", 
-    tier: 4,
-    cost: 8, 
-    prereqs: ["Animal Training"],
-    appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Dragon",
+        description: "Riders can now ride Dragons.",
+        appearance: <></>
+      },
+      {
+        name: "Dragon Egg",
+        description: "Used for spawning Dragons.",
+        appearance: <></>
+      },
+    ],
   },
   { 
     name: "Herbalism", 
@@ -228,7 +424,13 @@ export const SKILLS = [
     cost: 8, 
     prereqs: [],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Regeneration",
+        description: "All troops naturally regain health over time.",
+        appearance: <></>
+      },
+    ],
   },
   { 
     name: "First Aid", 
@@ -236,47 +438,118 @@ export const SKILLS = [
     cost: 8, 
     prereqs: ["Herbalism"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Regeneration Boost",
+        description: "Regeneration rate for all troops increases by 10%.",
+        appearance: <></>
+      },
+      {
+        name: "Self-healing",
+        description: "Troops can now heal themselves by some amount after a cooldown period.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Surgery", 
+    name: "Medic", 
     tier: 3,
     cost: 8, 
     prereqs: ["First Aid"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Medic",
+        description: "Unlocks the Medic troop.",
+        appearance: <></>
+      },
+      {
+        name: "Status Effects Reduction",
+        description: "Any harmful status effects deal 50% less damage.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Healing", 
+    name: "Vitality", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Surgery"],
+    prereqs: ["Medic"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Angel",
+        description: "Unlocks the Angel unit.",
+        appearance: <></>
+      },
+      {
+        name: "Heal Pool",
+        description: "Capital has a heal pool within a certain radius.",
+        appearance: <></>
+      },
+      {
+        name: "Horses",
+        description: "Riders can now ride Horses.",
+        appearance: <></>
+      },
+      {
+        name: "Health Boost",
+        description: "All troops gain +20% more health.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Potions", 
+    name: "Catalysis", 
     tier: 2,
     cost: 8, 
     prereqs: ["Herbalism"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Alchemist",
+        description: "Unlocks the Alchemist troop.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Elixirs", 
+    name: "Mutagenics", 
     tier: 3,
     cost: 8, 
-    prereqs: ["Potions"],
+    prereqs: ["Catalysis"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Acid Rain",
+        description: "Alchemists can launch acid rain clouds.",
+        appearance: <></>
+      },
+      {
+        name: "Alchemist's Fire",
+        description: "Alchemists can attack with fire for a number of stars.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Alchemy", 
+    name: "Transmutation", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Elixirs"],
+    prereqs: ["Mutagenics"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Construct",
+        description: "Unlocks the Construct troop.",
+        appearance: <></>
+      },
+      {
+        name: "Philosopher's Stone",
+        description: "Troops can be revived for a reduced number of stars.",
+        appearance: <></>
+      },
+    ],
   },
   { 
     name: "Knowledge", 
@@ -284,54 +557,136 @@ export const SKILLS = [
     cost: 8, 
     prereqs: [],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Literacy",
+        description: "Price of all technologies is reduced by 10%.",
+        appearance: <></>
+      },
+      {
+        name: "Diplomacy",
+        description: "Can make peace treaties with other civilisations.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Spellcasting", 
+    name: "Sigilcraft", 
     tier: 2,
     cost: 8, 
     prereqs: ["Knowledge"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Attack Sigil",
+        description: "Boosts attack by +10% within a radius of the sigil.",
+        appearance: <></>
+      },
+      {
+        name: "Defense Sigil",
+        description: "Boosts defense by +10% within a radius of the sigil.",
+        appearance: <></>
+      },
+      {
+        name: "Speed Sigil",
+        description: "Boosts speed by +10% within a radius of the sigil.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Enchanting", 
+    name: "Wizardry", 
     tier: 3,
     cost: 8, 
-    prereqs: ["Spellcasting"],
+    prereqs: ["Sigilcraft"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Wizard",
+        description: "Unlocks the Wizard troop.",
+        appearance: <></>
+      },
+      {
+        name: "Wizard Attack Defense",
+        description: "Reduces damage from enemy Wizards by 20%.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Mystic Arts", 
+    name: "Omnimancy", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Enchanting"],
+    prereqs: ["Wizardry"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Mage",
+        description: "Unlocks the Mage troop.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Logic", 
+    name: "Ethics", 
     tier: 2,
     cost: 8, 
     prereqs: ["Knowledge"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Pacifism",
+        description: "If no fighting occurs for 20 seconds, number of stars generated increases by 2.",
+        appearance: <></>
+      },
+      {
+        name: "Slow Capture",
+        description: "Enemies take 15% longer time to capture cities.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Science", 
+    name: "Influence", 
     tier: 3,
     cost: 8, 
-    prereqs: ["Logic"],
+    prereqs: ["Ethics"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Propaganda Machine",
+        description: "Can convert enemy troops to your own if left within the Propaganda Machine's radius for too long.",
+        appearance: <></>
+      },
+      {
+        name: "Weakened Attacks",
+        description: "Enemy troops deal 10% less damage when in your territory.",
+        appearance: <></>
+      },
+    ],
   },
   { 
-    name: "Sage", 
+    name: "Enlightenment", 
     tier: 4,
     cost: 8, 
-    prereqs: ["Science"],
+    prereqs: ["Influence"],
     appearance: <></>,
-    unlocks: [],
+    unlocks: [
+      {
+        name: "Sage",
+        description: "Unlocks the Sage troop.",
+        appearance: <></>
+      },
+      {
+        name: "Sanctuary",
+        description: "Enemy troops cannot deal damage when within capital's borders.",
+        appearance: <></>
+      },
+      {
+        name: "Misinformation Immunity",
+        description: "All troops no longer susceptible to enemy propaganda.",
+        appearance: <></>
+      },
+    ],
   },
 ];
