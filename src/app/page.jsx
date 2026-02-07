@@ -111,46 +111,88 @@ export default function Home() {
     return validPositions;
   }
 
-  // REFACTOR WITH BFS LATER
   const validTroopPositions = (troop) => {
-    const validPositions = [];
+    const maxMove = TROOPS[troop.type].movement;
+    const results = [];
+    const visited = new Set();
 
-    for (let i = 0; i < TROOPS[troop.type].movement; i++) {
-      if (validPositions.length === 0) {
-        for (let x = troop.x - 1; x <= troop.x + 1; x++) {
-          for (let y = troop.y - 1; y <= troop.y + 1; y++) {
-            if (
-              (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
-              (x === troop.x && y === troop.y) || // Current position
-              (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
-              (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
-              (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
-              (boardState[y][x].features.length > 0) // Cell has a feature
-            ) continue;
-            validPositions.push({ x, y });
-          }
+    const key = (x, y) => `${x},${y}`;
+
+    const isBlocked = (x, y) =>
+      x < 0 || x >= NUM_ROWS ||
+      y < 0 || y >= NUM_ROWS ||
+      troops.some(t => t.x === x && t.y === y) ||
+      boardState[y][x].color === TERRAIN_COLOURS["Water"] ||
+      boardState[y][x].color === TERRAIN_COLOURS["Ocean"] ||
+      boardState[y][x].features.length > 0;
+
+    const queue = [{ x: troop.x, y: troop.y, dist: 0 }];
+    visited.add(key(troop.x, troop.y));
+
+    while (queue.length > 0) {
+      const { x, y, dist } = queue.shift();
+
+      if (dist === maxMove) continue;
+
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy === 0) continue;
+
+          const nx = x + dx;
+          const ny = y + dy;
+          const k = key(nx, ny);
+
+          if (visited.has(k) || isBlocked(nx, ny)) continue;
+
+          visited.add(k);
+          results.push({ x: nx, y: ny });
+          queue.push({ x: nx, y: ny, dist: dist + 1 });
         }
-      } else {
-        validPositions.forEach((pos) => {
-          for (let x = pos.x - 1; x <= pos.x + 1; x++) {
-            for (let y = pos.y - 1; y <= pos.y + 1; y++) {
-              if (
-                (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
-                (x === pos.x && y === pos.y) || // Current position
-                (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
-                (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
-                (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
-                (boardState[y][x].features.length > 0) // Cell has a feature
-              ) continue;
-              validPositions.push({ x, y });
-            }
-          }
-        })
       }
     }
+
+    return results;
+  };
+
+  // const validTroopPositions = (troop) => {
+  //   const validPositions = [];
+
+  //   for (let i = 0; i < TROOPS[troop.type].movement; i++) {
+  //     if (validPositions.length === 0) {
+  //       for (let x = troop.x - 1; x <= troop.x + 1; x++) {
+  //         for (let y = troop.y - 1; y <= troop.y + 1; y++) {
+  //           if (
+  //             (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
+  //             (x === troop.x && y === troop.y) || // Current position
+  //             (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
+  //             (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
+  //             (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
+  //             (boardState[y][x].features.length > 0) // Cell has a feature
+  //           ) continue;
+  //           validPositions.push({ x, y });
+  //         }
+  //       }
+  //     } else {
+  //       validPositions.forEach((pos) => {
+  //         for (let x = pos.x - 1; x <= pos.x + 1; x++) {
+  //           for (let y = pos.y - 1; y <= pos.y + 1; y++) {
+  //             if (
+  //               (validPositions.some((pos) => pos.x === x && pos.y === y)) || // Position already added
+  //               (x === pos.x && y === pos.y) || // Current position
+  //               (x < 0 || x >= NUM_ROWS || y < 0 || y >= NUM_ROWS) || // Out of bounds
+  //               (troops.some((t) => t.x === x && t.y === y)) || // Cell occupied by a troop
+  //               (boardState[y][x].color === TERRAIN_COLOURS["Water"] || boardState[y][x].color === TERRAIN_COLOURS["Ocean"]) || // Water or Ocean Cell
+  //               (boardState[y][x].features.length > 0) // Cell has a feature
+  //             ) continue;
+  //             validPositions.push({ x, y });
+  //           }
+  //         }
+  //       })
+  //     }
+  //   }
   
-    return validPositions;
-  }
+  //   return validPositions;
+  // }
 
   const TroopHoverCard = ({ troop }) => (
     <HoverCard key={`${troop.x}, ${troop.y}`} >
